@@ -1,13 +1,18 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 // Configure HTTP clients
 builder.Services.AddHttpClient("LoggingService", client => client.BaseAddress = new Uri("http://localhost:5064/"));
 builder.Services.AddHttpClient("MessagesService", client => client.BaseAddress = new Uri("http://localhost:5015/"));
 
 var app = builder.Build();
 
-app.MapPost("facade", async (IHttpClientFactory clientFactory, HttpContext httpContext) => {
-    var request = await httpContext.Request.ReadFromJsonAsync<MessageRequest>();
+app.UseSwagger();  
+app.UseSwaggerUI();
+
+app.MapPost("facade", async (IHttpClientFactory clientFactory, MessageRequest request) => {
     var loggingClient = clientFactory.CreateClient("LoggingService");
     var uuid = Guid.NewGuid().ToString();
     await loggingClient.PostAsJsonAsync("/log", new { Uuid = uuid, request?.Message });
