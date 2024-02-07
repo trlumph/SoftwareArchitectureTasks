@@ -13,10 +13,30 @@ class HazelcastBasics
         var map = await hz.GetMapAsync<string, int>("my-distributed-map-2");
 
         //await DistributedMapExample(hz);
-        //Console.WriteLine($"Final value without locks: {await HazelcastMapping.NoLocks(map)}");
-        //Console.WriteLine($"Final value with pessimistic locking: {await HazelcastMapping.PessimisticLocks(map)}");
-        Console.WriteLine($"Final value with optimistic locking: {await HazelcastMapping.OptimisticLocks(map)}");
+        //await LockExamples(map);
+        await BoundedQueueExample(hz);
+        
         await hz.DisposeAsync();
+    }
+
+    private static async Task BoundedQueueExample(IHazelcastClient hz)
+    {
+        await using var queue = await hz.GetQueueAsync<int>("bounded-queue");
+        var writerTask = HazelcastQueue.WriteToQueue(queue);
+        var readerTask1 = HazelcastQueue.ReadFromQueue(queue, "Reader1");
+        var readerTask2 = HazelcastQueue.ReadFromQueue(queue, "Reader2");
+        
+        await writerTask;
+        
+        await Task.WhenAny(readerTask1, readerTask2, Task.Delay(TimeSpan.FromSeconds(10)));
+    }
+
+    private static async Task SoloWriterExample(IHazelcastClient hz)
+    {
+        await using var queue = await hz.GetQueueAsync<int>("bounded-queue");
+        var writerTask = HazelcastQueue.WriteToQueue(queue);
+        
+        await writerTask;
     }
 
     private static async Task DistributedMapExample(IHazelcastClient hz)
@@ -31,6 +51,13 @@ class HazelcastBasics
         }
 
         Console.WriteLine("1000 entries added to the Distributed Map");
+    }
+
+    private static async Task LockExamples(IHMap<string,int> map)
+    {
+        Console.WriteLine($"Final value without locks: {await HazelcastMapping.NoLocks(map)}");
+        Console.WriteLine($"Final value with pessimistic locking: {await HazelcastMapping.PessimisticLocks(map)}");
+        Console.WriteLine($"Final value with optimistic locking: {await HazelcastMapping.OptimisticLocks(map)}");
     }
 }
 
@@ -136,5 +163,22 @@ public class HazelcastMapping
         await Task.WhenAll(tasks);        
 
         return await map.GetAsync("key");
+    }
+}
+
+public class HazelcastQueue
+{
+    public static async Task WriteToQueue(IHQueue<int> queue) {
+        for (var i = 1; i <= 100; i++) {
+            await queue.PutAsync(i);
+            Console.WriteLine($"Produced: {i}");
+        }
+    }
+    
+    public static async Task ReadFromQueue(IHQueue<int> queue, string readerId) {
+        while (true) {
+            var item = await queue.TakeAsync();
+            Console.WriteLine($"{readerId} consumed: {item}");
+        }
     }
 }
