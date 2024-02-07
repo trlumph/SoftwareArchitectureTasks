@@ -1,29 +1,26 @@
+using FacadeService;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Configure HTTP clients
-builder.Services.AddHttpClient("LoggingService", client => client.BaseAddress = new Uri("http://localhost:5064/"));
-builder.Services.AddHttpClient("MessagesService", client => client.BaseAddress = new Uri("http://localhost:5015/"));
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
 app.UseSwagger();  
 app.UseSwaggerUI();
 
-app.MapPost("facade", async (IHttpClientFactory clientFactory, MessageRequest request) => {
-    var loggingClient = clientFactory.CreateClient("LoggingService");
+app.MapPost("/facade", async (HttpContext httpContext, ILoggingClientService loggingClientService) => {
+    var request = await httpContext.Request.ReadFromJsonAsync<MessageRequest>();
+    var client = await loggingClientService.GetClientAsync();
     var uuid = Guid.NewGuid().ToString();
-    await loggingClient.PostAsJsonAsync("/log", new { Uuid = uuid, request?.Message });
+    await client.PostAsJsonAsync("/log", new { Uuid = uuid, Message = request?.Message });
     return Results.Ok(new { Uuid = uuid });
 });
 
-app.MapGet("facade", async (IHttpClientFactory clientFactory) => {
-    var loggingClient = clientFactory.CreateClient("LoggingService");
-    var messagesClient = clientFactory.CreateClient("MessagesService");
-    var loggingResponse = await loggingClient.GetStringAsync("/log");
-    var messagesResponse = await messagesClient.GetStringAsync("/message");
+app.MapGet("/facade", async (ILoggingClientService loggingClientService) => {
+    var client = await loggingClientService.GetClientAsync();
+    var loggingResponse = await client.GetStringAsync("/log");
+    var messagesResponse = "Static response or another service call";
     return Results.Ok($"{loggingResponse}\n{messagesResponse}");
 });
 

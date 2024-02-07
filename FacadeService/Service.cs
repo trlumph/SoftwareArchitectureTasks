@@ -1,6 +1,3 @@
-namespace Microsoft.Extensions.DependencyInjection;
+namespace FacadeService;
 
-public class Service
-{
-    
-}
+public class Service : Attribute { }
