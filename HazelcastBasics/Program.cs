@@ -1,4 +1,5 @@
 ﻿using Hazelcast;
+using Hazelcast.Core;
 using Hazelcast.DistributedObjects;
 
 namespace HazelcastBasics;
@@ -8,17 +9,13 @@ class HazelcastBasics
     public static async Task Main()
     {
         var options = new HazelcastOptionsBuilder().Build();
-        options.Networking.Addresses.Add("localhost:5701");
-        options.Networking.Addresses.Add("localhost:5702");
-        options.Networking.Addresses.Add("localhost:5703");
-        
-        // Create Hazelcast client and connect to the cluster
-        var hz = await HazelcastClientFactory.StartNewClientAsync(options);
+        await using var hz = await HazelcastClientFactory.StartNewClientAsync(options);
+        var map = await hz.GetMapAsync<string, int>("my-distributed-map-2");
 
         //await DistributedMapExample(hz);
-        //await NoLocks(hz);
-        await PessimisticLocks(hz);
-        // await OptimisticLocks(hz);
+        //Console.WriteLine($"Final value without locks: {await HazelcastMapping.NoLocks(map)}");
+        //Console.WriteLine($"Final value with pessimistic locking: {await HazelcastMapping.PessimisticLocks(map)}");
+        Console.WriteLine($"Final value with optimistic locking: {await HazelcastMapping.OptimisticLocks(map)}");
         await hz.DisposeAsync();
     }
 
@@ -35,10 +32,21 @@ class HazelcastBasics
 
         Console.WriteLine("1000 entries added to the Distributed Map");
     }
+}
 
-    private static async Task NoLocks(IHazelcastClient hz)
+public class HazelcastMapping
+{
+    public static async Task<IHMap<string, int>> MapFactory()
     {
+        var options = new HazelcastOptionsBuilder().Build();
+        var hz = await HazelcastClientFactory.StartNewClientAsync(options);
         var map = await hz.GetMapAsync<string, int>("my-distributed-map-2");
+        
+        return map;
+    }
+    
+    public static async Task<int> NoLocks(IHMap<string,int> map)
+    {
         await map.PutAsync("key", 0);
 
         var tasks = new List<Task>();
@@ -59,49 +67,49 @@ class HazelcastBasics
 
         await Task.WhenAll(tasks);
 
-        var finalValue = await map.GetAsync("key");
-        Console.WriteLine($"Final value without locks: {finalValue}");
+        return await map.GetAsync("key");
     }
 
-    private static async Task PessimisticLocks(IHazelcastClient hz)
+    public static async Task<int> PessimisticLocks(IHMap<string,int> map)
     {
-        var map = await hz.GetMapAsync<string, int>("my-distributed-map-2");
         await map.PutAsync("key", 0);
         
         var tasks = new List<Task>();
 
         for (var i = 0; i < 3; i++)
         {
-            var task = Task.Run(async () =>
+            using (AsyncContext.New())
             {
-                for (var k = 0; k < 10_000; k++)
+                var task = Task.Run(async () =>
                 {
-                    await map.LockAsync("key");
-                    try
+                    for (var k = 0; k < 10_000; k++)
                     {
-                        var value = await map.GetAsync("key");
-                        value++;
-                        await map.PutAsync("key", value);
+                        await map.LockAsync("key");
+                        
+                        try
+                        {
+                            var value = await map.GetAsync("key");
+                            value++;
+                            await map.PutAsync("key", value);
+                        }
+                        finally
+                        {
+                            await map.UnlockAsync("key");
+                        }
                     }
-                    finally
-                    {
-                        await map.UnlockAsync("key");
-                    }
-                }
-            });
-            
-            tasks.Add(task);
+                });
+
+                tasks.Add(task);
+            }
         }
         
         await Task.WhenAll(tasks);        
 
-        var finalValue = await map.GetAsync("key");
-        Console.WriteLine($"Final value with pessimistic locking: {finalValue}");
+        return await map.GetAsync("key");
     }
     
-    private static async Task OptimisticLocks(IHazelcastClient hz)
+    public static async Task<int> OptimisticLocks(IHMap<string,int> map)
     {
-        var map = await hz.GetMapAsync<string, int>("my-distributed-map-2");
         await map.PutAsync("key", 0);
         
         var tasks = new List<Task>();
@@ -113,20 +121,20 @@ class HazelcastBasics
                 for (var k = 0; k < 10_000; k++)
                 {
                     var success = false;
-                    while (!success) {
+                    while (!success)
+                    {
                         var oldValue = await map.GetAsync("key");
                         var newValue = oldValue + 1;
                         success = await map.ReplaceAsync("key", oldValue, newValue);
                     }
                 }
             });
-            
+
             tasks.Add(task);
         }
-        
+
         await Task.WhenAll(tasks);        
 
-        var finalValue = await map.GetAsync("key");
-        Console.WriteLine($"Final value with optimistic locking: {finalValue}");
+        return await map.GetAsync("key");
     }
 }
