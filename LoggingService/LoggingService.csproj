@@ -13,4 +13,8 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Hazelcast.Net" Version="5.3.1" />
+    </ItemGroup>
+
 </Project>
