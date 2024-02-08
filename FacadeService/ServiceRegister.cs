@@ -1,5 +1,6 @@
 using System.Reflection;
 using FacadeService;
+using Hazelcast;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,18 @@ public static class ServiceRegister
         serviceCollection.AddHttpClient("LoggingService3", client => client.BaseAddress = new Uri("http://localhost:5066/"));
 
         serviceCollection.AddSingleton<ILoggingClientService, LoggingClientService>();
+        
+        serviceCollection.AddHttpClient("MessagesService1", client => client.BaseAddress = new Uri("http://localhost:5074/"));
+        serviceCollection.AddHttpClient("MessagesService2", client => client.BaseAddress = new Uri("http://localhost:5075/"));
+        
+        serviceCollection.AddSingleton<IMessagesClientService, MessagesClientService>();
+        
+        serviceCollection.AddSingleton<IHazelcastClient>(serviceProvider =>
+        {
+            var hzOptions = new HazelcastOptionsBuilder().Build();
+            // Note: This call is not awaited, but it's expected to complete synchronously
+            return HazelcastClientFactory.StartNewClientAsync(hzOptions).GetAwaiter().GetResult();
+        });
 
         serviceCollection.AddEndpointsApiExplorer();
         serviceCollection.AddSwaggerGen();

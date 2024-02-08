@@ -1,4 +1,4 @@
-# Task 3 - Hazelcast Microservices
+# Task 4 - Hazelcast Message Queue
 ### Framework: Minimal API C# .NET 7.0
 
 Author: [Tymur Krasnianskyi](https://github.com/trlumph/)
@@ -54,21 +54,64 @@ Update the `launchSettings.json` file to include the following environment varia
   }
 }
 ```
+## 4: Messages Service
+Update the `launchSettings.json` file to include the following environment variables:
+- `applicationUrl` - the URL of the service
+```json
+{
+  "profiles": {
+    "MessagesService1": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5074",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "HAZELCAST_NODE": "localhost:5701"
+      }
+    },
+    "MessagesService2": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5075",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "HAZELCAST_NODE": "localhost:5702"
+      }
+    }
+  }
+}
 
-## 4: Running the Services
+```
+## 5: Running the Services
 ![images/workflow.png](images/workflow.png)
 ![images/running_services.png](images/running_services.png)
 
-## 5: Testing the Services
+## 6: Testing the Services
 ### Post 10 messages
 ![images/post_message.png](images/post_message.png)
+
+Logging Services:
+
 ![images/node1_messages.png](images/node1_messages.png)
 ![images/node2_messages.png](images/node2_messages.png)
 ![images/node3_messages.png](images/node3_messages.png)
-### Get all messages
-![images/get_messages.png](images/get_messages.png)
 
-### Shutdown some of the nodes
+Messages Services:
+![images/messages_service1.png](images/messages_service1.png)
+![images/messages_service2.png](images/messages_service2.png)
+
+### Get all messages
+*Note: The result format is "`LoggingServiceMessages\nMessagesServiceMessages`"*
+
+From MessagesService 1:
+
+![images/all_messages1.png](images/all_messages1.png)
+
+From MessagesService 2:
+
+![images/all_messages2.png](images/all_messages2.png)
+
+### Shutdown some of the logging nodes
 ![images/node3_shutdown.png](images/node3_shutdown.png)
 
 The messages are still available in the cluster.
