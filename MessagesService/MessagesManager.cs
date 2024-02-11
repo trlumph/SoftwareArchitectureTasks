@@ -1,3 +1,4 @@
+using ConsulManagerService;
 using Hazelcast;
 
 namespace MessagesService;
@@ -12,15 +13,19 @@ public class MessagesManager : IMessagesManager
 {
     private readonly IHazelcastClient _hzClient;
     private readonly List<string> _messages = new();
+    private readonly MessageQueueConfigurationService _messageQueueConfigService;
 
-    public MessagesManager(IHazelcastClient hzClient)
+    public MessagesManager(IHazelcastClient hzClient, MessageQueueConfigurationService messageQueueConfigService)
     {
         _hzClient = hzClient;
+        _messageQueueConfigService = messageQueueConfigService;
     }
 
     public async Task StartListening(CancellationToken cancellationToken)
     {
-        var queue = await _hzClient.GetQueueAsync<string>("messageQueue");
+        var queueName = await _messageQueueConfigService.GetMQNameAsync();
+        var queue = await _hzClient.GetQueueAsync<string>(queueName);
+        
         while (!cancellationToken.IsCancellationRequested)
         {
             // Blocks until a message is available

@@ -1,4 +1,4 @@
-# Task 4 - Hazelcast Message Queue
+# Task 5 - Microservices: Service Discovery and Config Server using Consul
 ### Framework: Minimal API C# .NET 7.0
 
 Author: [Tymur Krasnianskyi](https://github.com/trlumph/)

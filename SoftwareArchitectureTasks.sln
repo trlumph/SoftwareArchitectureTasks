@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HazelcastBenchmarks", "Haze
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HazelcastTests", "HazelcastTests\HazelcastTests.csproj", "{FFCFE59A-B3F0-4B11-AB29-33457CB6F363}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsulManagerService", "ConsulManagerService\ConsulManagerService.csproj", "{60DF8C36-4BEB-41A5-948B-BAF04E513B88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{FFCFE59A-B3F0-4B11-AB29-33457CB6F363}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFCFE59A-B3F0-4B11-AB29-33457CB6F363}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFCFE59A-B3F0-4B11-AB29-33457CB6F363}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60DF8C36-4BEB-41A5-948B-BAF04E513B88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60DF8C36-4BEB-41A5-948B-BAF04E513B88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60DF8C36-4BEB-41A5-948B-BAF04E513B88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60DF8C36-4BEB-41A5-948B-BAF04E513B88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

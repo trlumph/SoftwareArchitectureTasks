@@ -3,19 +3,17 @@
     "MessagesService1": {
       "commandName": "Project",
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5074",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "HAZELCAST_NODE": "localhost:5701"
+        "ASPNETCORE_URLS": "http://localhost:5074"
       }
     },
     "MessagesService2": {
       "commandName": "Project",
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5075",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "HAZELCAST_NODE": "localhost:5702"
+        "ASPNETCORE_URLS": "http://localhost:5075"
       }
     }
   }

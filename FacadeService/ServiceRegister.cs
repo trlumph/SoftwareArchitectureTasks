@@ -1,4 +1,6 @@
 using System.Reflection;
+using Consul;
+using ConsulManagerService;
 using FacadeService;
 using Hazelcast;
 
@@ -19,26 +21,28 @@ public static class ServiceRegister
             serviceCollection.AddTransient(service);
         }
         
-        serviceCollection.AddHttpClient("LoggingService1", client => client.BaseAddress = new Uri("http://localhost:5064/"));
-        serviceCollection.AddHttpClient("LoggingService2", client => client.BaseAddress = new Uri("http://localhost:5065/"));
-        serviceCollection.AddHttpClient("LoggingService3", client => client.BaseAddress = new Uri("http://localhost:5066/"));
+        // TODO : To be removed
+        // serviceCollection.AddHttpClient("LoggingService1", client => client.BaseAddress = new Uri("http://localhost:5064/"));
+        // serviceCollection.AddHttpClient("LoggingService2", client => client.BaseAddress = new Uri("http://localhost:5065/"));
+        // serviceCollection.AddHttpClient("LoggingService3", client => client.BaseAddress = new Uri("http://localhost:5066/"));
+        // serviceCollection.AddHttpClient("MessagesService1", client => client.BaseAddress = new Uri("http://localhost:5074/"));
+        // serviceCollection.AddHttpClient("MessagesService2", client => client.BaseAddress = new Uri("http://localhost:5075/"));
 
-        serviceCollection.AddSingleton<ILoggingClientService, LoggingClientService>();
-        
-        serviceCollection.AddHttpClient("MessagesService1", client => client.BaseAddress = new Uri("http://localhost:5074/"));
-        serviceCollection.AddHttpClient("MessagesService2", client => client.BaseAddress = new Uri("http://localhost:5075/"));
-        
-        serviceCollection.AddSingleton<IMessagesClientService, MessagesClientService>();
+        // serviceCollection.AddSingleton<ILoggingClientService, LoggingClientService>();
+        // serviceCollection.AddSingleton<IMessagesClientService, MessagesClientService>();
         
         serviceCollection.AddSingleton<IHazelcastClient>(serviceProvider =>
         {
             var hzOptions = new HazelcastOptionsBuilder().Build();
-            // Note: This call is not awaited, but it's expected to complete synchronously
             return HazelcastClientFactory.StartNewClientAsync(hzOptions).GetAwaiter().GetResult();
         });
 
+        serviceCollection.AddSingleton<ConsulRegistrationManager>();
+        serviceCollection.AddSingleton<MessageQueueConfigurationService>();
+        
         serviceCollection.AddEndpointsApiExplorer();
         serviceCollection.AddSwaggerGen();
+        serviceCollection.AddHttpClient();
         
         return serviceCollection;
     }
