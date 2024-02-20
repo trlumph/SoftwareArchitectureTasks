@@ -21,16 +21,6 @@ public static class ServiceRegister
             serviceCollection.AddTransient(service);
         }
         
-        // TODO : To be removed
-        // serviceCollection.AddHttpClient("LoggingService1", client => client.BaseAddress = new Uri("http://localhost:5064/"));
-        // serviceCollection.AddHttpClient("LoggingService2", client => client.BaseAddress = new Uri("http://localhost:5065/"));
-        // serviceCollection.AddHttpClient("LoggingService3", client => client.BaseAddress = new Uri("http://localhost:5066/"));
-        // serviceCollection.AddHttpClient("MessagesService1", client => client.BaseAddress = new Uri("http://localhost:5074/"));
-        // serviceCollection.AddHttpClient("MessagesService2", client => client.BaseAddress = new Uri("http://localhost:5075/"));
-
-        // serviceCollection.AddSingleton<ILoggingClientService, LoggingClientService>();
-        // serviceCollection.AddSingleton<IMessagesClientService, MessagesClientService>();
-        
         serviceCollection.AddSingleton<IHazelcastClient>(serviceProvider =>
         {
             var hzOptions = new HazelcastOptionsBuilder().Build();

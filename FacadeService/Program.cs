@@ -54,7 +54,6 @@ app.MapPost("/facade", async (
     await queue.OfferAsync(request.Message);
 
     var loggingServiceUri = await DiscoveryService.DiscoverServiceUri(consulClient, "logging-service");
-    Console.WriteLine(loggingServiceUri.ToString().Trim('/'));
     var client = httpClientFactory.CreateClient();
     var uuid = Guid.NewGuid().ToString();
     await client.PostAsJsonAsync(loggingServiceUri+"log", new { Uuid = uuid, request.Message });

@@ -38,19 +38,19 @@ var serviceName = "logging-service";
 var serviceId = $"{serviceName}-{Guid.NewGuid()}";
 var servicePort = new Uri(builder.Configuration.GetValue<string>("ASPNETCORE_URLS")!).Port;
 
-var registrationManager = app.Services.GetRequiredService<ConsulRegistrationManager>();
-await registrationManager.Register(consulClient, serviceName, serviceId, servicePort);
+var consulManager = app.Services.GetRequiredService<ConsulRegistrationManager>();
+await consulManager.Register(consulClient, serviceName, serviceId, servicePort);
 
 app.Lifetime.ApplicationStopping.Register(async () =>
 {
-    await registrationManager.Deregister(consulClient, serviceId);
+    await consulManager.Deregister(consulClient, serviceId);
     await hzClient.DisposeAsync();
 });
 
 AppDomain.CurrentDomain.UnhandledException += async (sender, eventArgs) =>
 {
     Console.WriteLine("Unhandled exception occurred. Deregistering service...");
-    await registrationManager.Deregister(consulClient, serviceId);
+    await consulManager.Deregister(consulClient, serviceId);
 };
 
 app.MapPost("log", async (LogEntry logEntry) => {

@@ -398,3 +398,4 @@ Debug/
 Release/
 /build/
 *.log
+*.DS_Store
